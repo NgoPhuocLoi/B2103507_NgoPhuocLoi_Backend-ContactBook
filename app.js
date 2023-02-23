@@ -1,7 +1,11 @@
 const express = require("express");
 const cors = require("cors");
 const contactRouter = require("./src/routes/contact.route");
+const userRouter = require("./src/routes/user.route");
 const ApiError = require("./src/helpers/api-error");
+const verifyToken = require("./src/middlewares/verifyToken");
+
+require("dotenv").config();
 
 const app = express();
 
@@ -9,7 +13,8 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/api/contacts", contactRouter);
+app.use("/api/contacts", verifyToken, contactRouter);
+app.use("/api/user", userRouter);
 
 app.use((req, res, next) => {
   return next(new ApiError(404, "Resource not found"));

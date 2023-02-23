@@ -12,6 +12,7 @@ class ContactService {
       address: payload.address,
       phone: payload.phone,
       favorite: payload.favorite,
+      userId: ObjectId(payload.userId),
     };
 
     Object.keys(contact).forEach(
@@ -41,9 +42,10 @@ class ContactService {
     return await cursor.toArray();
   }
 
-  async findByName(name) {
+  async findByName(name, userId) {
     return await this.find({
       name: { $regex: new RegExp(name), $options: "i" },
+      userId: ObjectId(userId),
     });
   }
 
@@ -73,12 +75,12 @@ class ContactService {
     return res.value;
   }
 
-  async findFavorite() {
-    return this.find({ favorite: true });
+  async findFavorite(userId) {
+    return this.find({ favorite: true, userId: ObjectId(userId) });
   }
 
-  async deleteAll() {
-    const res = await this.Contact.deleteMany({});
+  async deleteAll(userId) {
+    const res = await this.Contact.deleteMany({ userId: ObjectId(userId) });
     return res.deletedCount;
   }
 }

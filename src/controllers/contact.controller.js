@@ -1,3 +1,4 @@
+const { ObjectId } = require("mongodb");
 const ApiError = require("../helpers/api-error");
 const MongoDB = require("../helpers/mongodb");
 const ContactService = require("../services/contact.service");
@@ -7,7 +8,10 @@ const contactController = {
     if (!req.body?.name) return next(new ApiError(400, "Name cannot be empty"));
     try {
       const contactService = new ContactService(MongoDB.client);
-      const document = await contactService.create(req.body);
+      const document = await contactService.create({
+        ...req.body,
+        userId: req.user._id,
+      });
       return res.json({
         message: "Create successfully",
         contact: document,
@@ -23,14 +27,13 @@ const contactController = {
       const contactService = new ContactService(MongoDB.client);
       const { name } = req.query;
       if (name) {
-        documents = await contactService.findByName(name);
+        documents = await contactService.findByName(name, req.user._id);
       } else {
-        documents = await contactService.find({});
+        documents = await contactService.find({
+          userId: ObjectId(req.user._id),
+        });
       }
-
-      res.json({
-        contacts: documents,
-      });
+      res.json({ contacts: documents });
     } catch (error) {
       next(new ApiError(500, "An error occur while retrieving contacts"));
     }
@@ -88,7 +91,7 @@ const contactController = {
   deleteAll: async (_req, res, next) => {
     try {
       const contactService = new ContactService(MongoDB.client);
-      const deletedCount = await contactService.deleteAll();
+      const deletedCount = await contactService.deleteAll(req.user._id);
       res.json({
         message: deletedCount + " contacts were deleted successfully",
       });
@@ -99,7 +102,7 @@ const contactController = {
   findAllFavorite: async (_req, res, next) => {
     try {
       const contactService = new ContactService(MongoDB.client);
-      const documents = await contactService.findFavorite();
+      const documents = await contactService.findFavorite(req.user._id);
       res.json({
         favoriteContacts: documents,
       });
