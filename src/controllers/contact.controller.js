@@ -88,7 +88,7 @@ const contactController = {
       next(new ApiError(500, "An error occur while deleting contact"));
     }
   },
-  deleteAll: async (_req, res, next) => {
+  deleteAll: async (req, res, next) => {
     try {
       const contactService = new ContactService(MongoDB.client);
       const deletedCount = await contactService.deleteAll(req.user._id);
